@@ -27,7 +27,16 @@ def plot_tweets_ratio(tweets: dict) -> None:
     plt.axis("equal")
     plt.show()
 
+# Before anything else, we can print a couple of tweets from the dataset to see how they look.
+# Understanding the data is responsible for 80% of the success or failure in data science projects.
+# We can use this time to observe aspects we'd like to consider when preprocessing our data.
+def display_random_tweets(tweets: dict) -> None:
+    green, red = "\033[92m", "\033[91m"
+    for pon in tweets:
+        print(f"{green if pon == 'pos' else red}{tweets[pon][random.randrange(0, len(tweets[pon]))]}")
+
 if __name__ == "__main__":
     tweets = load_tweets()
     display_tweets_info(tweets)
-    plot_tweets_ratio(tweets)
+    # plot_tweets_ratio(tweets)
+    display_random_tweets(tweets)
