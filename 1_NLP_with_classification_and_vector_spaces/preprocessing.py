@@ -1,4 +1,3 @@
-from functools import reduce
 from typing import List
 import nltk
 from nltk.corpus import twitter_samples
