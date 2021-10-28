@@ -3,40 +3,54 @@ from nltk.corpus import twitter_samples
 import matplotlib.pyplot as plt
 import random
 
-def load_tweets() -> dict:
-    tweets = {
-        "pos": twitter_samples.strings("positive_tweets.json"),
-        "neg": twitter_samples.strings("negative_tweets.json")
-    }
-    return tweets
+class Tweets(object):
+    def __init__(self):
+        # load tweets
+        self._tweets = {
+            "pos": twitter_samples.strings("positive_tweets.json"),
+            "neg": twitter_samples.strings("negative_tweets.json")
+        }
+    
+    def display_info(self):
+        for pon in self._tweets:
+            print(f"Number of {pon}{'itive' if pon == 'pos' else 'ative'} tweets: {len(self._tweets[pon])}")
+        print(f"\nThe type of tweets: {type(self._tweets[pon])}")
+        print(f"The type of a tweet entry: {type(self._tweets[pon][0])}")
+    
+    def plot_pos_neg_ratio(self):
+        plt.figure(figsize=(5, 5))
+        plt.pie(
+            x=[len(self._tweets[pon]) for pon in self._tweets],
+            labels=["Positive", "Negative"],
+            autopct="%1.1f%%",
+            startangle=90
+        )
+        plt.axis("equal")
+        plt.show()        
 
-def display_tweets_info(tweets: dict) -> None:
-    for pon in tweets:
-        print(f"Number of {pon}{'itive' if pon == 'pos' else 'ative'} tweets: {len(tweets[pon])}")
-    print(f"\nThe type of tweets: {type(tweets[pon])}")
-    print(f"The type of a tweet entry: {type(tweets[pon][0])}")
+    # Before anything else, we can print a couple of tweets from the dataset to see how they look.
+    # Understanding the data is responsible for 80% of the success or failure in data science projects.
+    # We can use this time to observe aspects we'd like to consider when preprocessing our data.
+    def display_random_tweets(self):
+        green, red = "\033[92m", "\033[91m"
+        for pon in self._tweets:
+            print(f"{green if pon == 'pos' else red}{self._tweets[pon][random.randrange(0, len(self._tweets[pon]))]}")
 
-def plot_tweets_ratio(tweets: dict) -> None:
-    plt.figure(figsize=(5, 5))
-    plt.pie(
-        x=[len(tweets[pon]) for pon in tweets],
-        labels=["Positive", "Negative"],
-        autopct="%1.1f%%",
-        startangle=90
-    )
-    plt.axis("equal")
-    plt.show()
+    def get_tweet(self, pon, index):
+        return self._tweets[pon][index]
 
-# Before anything else, we can print a couple of tweets from the dataset to see how they look.
-# Understanding the data is responsible for 80% of the success or failure in data science projects.
-# We can use this time to observe aspects we'd like to consider when preprocessing our data.
-def display_random_tweets(tweets: dict) -> None:
-    green, red = "\033[92m", "\033[91m"
-    for pon in tweets:
-        print(f"{green if pon == 'pos' else red}{tweets[pon][random.randrange(0, len(tweets[pon]))]}")
+"""
+    Preprocessing steps:
+        1. Tokenizing
+        2. Lowercasing
+        3. Removing stop words and punctuation
+        4. Stemming (lemmatizing?)
+        5. Othe customized preprocessing steps
+"""
+
+EXAMPLE_TWEET_INDEX = 2277
 
 if __name__ == "__main__":
-    tweets = load_tweets()
-    display_tweets_info(tweets)
-    # plot_tweets_ratio(tweets)
-    display_random_tweets(tweets)
+    tweets = Tweets()
+    example = tweets.get_tweet(pon="pos", index=EXAMPLE_TWEET_INDEX)
+    print(example)
