@@ -12,6 +12,10 @@ class Tweets(object):
             "neg": twitter_samples.strings("negative_tweets.json")
         }
     
+    @property
+    def tweets(self):
+        return self._tweets
+    
     def display_info(self):
         for pon in self._tweets:
             print(f"Number of {pon}{'itive' if pon == 'pos' else 'ative'} tweets: {len(self._tweets[pon])}")
