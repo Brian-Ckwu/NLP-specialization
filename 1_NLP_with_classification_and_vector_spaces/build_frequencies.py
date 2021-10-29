@@ -30,6 +30,22 @@ def count_words_freqs(words: List[str], freqs: Dict[Tuple[str, float], int]) -> 
         words_freqs.append([word, pos, neg])
     return words_freqs
 
+def plot_words_freqs(words_freqs: List[list]) -> None:
+    fig, ax = plt.subplots(figsize=(8, 8)) # ax: a single subplot / axs: multiple subplots
+    # words, pos_freqs, neg_freqs
+    words = [l[0] for l in words_freqs]
+    xs = np.log([l[1] + 1 for l in words_freqs]) # logarithmic to avoid large margins # + 1 to avoid log(0)
+    ys = np.log([l[2] + 1 for l in words_freqs])
+    # scatter plot
+    ax.scatter(xs, ys)
+    ax.set_xlabel("Log Positive Count")
+    ax.set_ylabel("Log Negative Count")
+    for i in range(len(words_freqs)):
+        ax.annotate(words[i], (xs[i], ys[i]), fontsize=12) # annotate the coordinates with tweet words
+    # show the scatter plot
+    ax.plot([0, 9], [0, 9], color="red")
+    plt.show()
+
 if __name__ == "__main__":
     t = Tweets()
     p = TweetPreprocessor()
@@ -39,4 +55,4 @@ if __name__ == "__main__":
     freqs = build_freqs(tweets, ys, p)
     # visualize the frequencies of selected words
     words_freqs = count_words_freqs(SELECTED_WORDS, freqs)
-    print(words_freqs)
+    plot_words_freqs(words_freqs)
