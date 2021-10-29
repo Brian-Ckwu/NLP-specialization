@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 import nltk
 from nltk.corpus import twitter_samples
 import matplotlib.pyplot as plt
@@ -13,7 +13,7 @@ class Tweets(object):
         }
     
     @property
-    def tweets(self):
+    def tweets(self) -> Dict[str, list]:
         return self._tweets
     
     def display_info(self):
