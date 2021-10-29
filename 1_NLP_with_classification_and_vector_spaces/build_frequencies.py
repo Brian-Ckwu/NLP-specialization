@@ -22,6 +22,14 @@ def build_freqs(tweets: List[str], ys: List[float], p: TweetPreprocessor) -> Dic
             #     freqs[t] = 1
     return freqs
 
+def count_words_freqs(words: List[str], freqs: Dict[Tuple[str, float], int]) -> List[list]:
+    words_freqs = list()
+    for word in words:
+        pos = freqs.get((word, 1), 0)
+        neg = freqs.get((word, 0), 0)
+        words_freqs.append([word, pos, neg])
+    return words_freqs
+
 if __name__ == "__main__":
     t = Tweets()
     p = TweetPreprocessor()
@@ -30,3 +38,5 @@ if __name__ == "__main__":
     ys = np.append(np.ones(len(t.tweets["pos"])), np.zeros(len(t.tweets["neg"])))
     freqs = build_freqs(tweets, ys, p)
     # visualize the frequencies of selected words
+    words_freqs = count_words_freqs(SELECTED_WORDS, freqs)
+    print(words_freqs)
