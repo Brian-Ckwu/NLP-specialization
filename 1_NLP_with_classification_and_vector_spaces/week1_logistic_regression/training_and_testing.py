@@ -21,6 +21,17 @@ def predict_tweet(tweet: str, freqs: Dict[Tuple[str, float], int], p: TweetPrepr
     h = sigmoid(z)
     return h
 
+def evaluate_accuracy(xs: List[str], ys: np.ndarray, freqs: Dict[Tuple[str, float], int], p: TweetPreprocessor, theta: np.ndarray) -> float:
+    preds = list()
+    for x in tqdm(xs):
+        h = predict_tweet(x, freqs, p, theta)
+        if h >= 0.50:
+            preds.append(1)
+        else:
+            preds.append(0)
+    y_hat = np.array(preds)
+    return np.mean(y_hat == ys)
+
 TRAINING_HALF = 4000
 TESTING_HALF = 1000
 LEARNING_RATE = 1e-9
@@ -50,6 +61,5 @@ if __name__ == "__main__":
         f.readline()
         theta = np.array(list(map(float, f.readline().split()))).reshape((3, 1))
     
-    tweet = "I am really happy! Fantastic! :)"
-    prob = predict_tweet(tweet, freqs, p, theta)
-    print(prob)
+    acc = evaluate_accuracy(test_xs, test_ys, freqs, p, theta)
+    print(acc)
