@@ -6,7 +6,7 @@ def sigmoid(z: float) -> float:
 
 def gradient_descent(x, y, theta, alpha, num_iters):
     m = x.shape[0]
-    for i in tqdm(range(0, num_iters)):
+    for _ in tqdm(range(0, num_iters)):
         # get z, the dot product of x and theta
         z = x @ theta
         # get the sigmoid of z
