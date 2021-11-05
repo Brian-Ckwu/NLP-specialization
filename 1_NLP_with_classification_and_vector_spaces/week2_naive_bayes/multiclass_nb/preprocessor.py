@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import Callable, List, Set
 from nltk.tokenize import wordpunct_tokenize
 from nltk.corpus import stopwords
 from string import punctuation
@@ -7,6 +7,7 @@ class Preprocessor(object):
     def __init__(self, stopwords: Set[str] = set(stopwords.words("english")), punc: Set[str] = set(punctuation)):
         self._stopwords = stopwords
         self._punc = punc
+        self._added_pipes = list()
     
     @property
     def stopwords(self) -> Set[str]:
@@ -15,6 +16,9 @@ class Preprocessor(object):
     @property
     def punctuations(self) -> Set[str]:
         return self._punc
+    
+    def add_pipe(self, pyfunc: Callable) -> None:
+        self._added_pipes.append(pyfunc)
 
     def tokenize(self, text: str) -> List[str]:
         return wordpunct_tokenize(text)
@@ -38,13 +42,13 @@ class Preprocessor(object):
     def remove_not_alpha(self, tokens: List[str]) -> List[str]:
         return list(filter(lambda t: t.isalpha(), tokens))
     
-    def preprocess(self, text: str, added_pipes: list = []) -> List[str]:
+    def preprocess(self, text: str) -> List[str]:
         tokens = self.tokenize(text)
         c_tokens = self.remove_sw_punc(tokens)
         l_tokens = self.to_lowercase(c_tokens)
 
         p_tokens = l_tokens
-        for func in added_pipes:
+        for func in self._added_pipes:
             p_tokens = func(p_tokens)
         
         return p_tokens
@@ -52,6 +56,8 @@ class Preprocessor(object):
 if __name__ == "__main__":
     import pandas as pd
     p = Preprocessor()
+    p.add_pipe(p.remove_digits)
+    p.add_pipe(p.remove_not_alpha)
     
     file = "./data/emr_data_10_icds.tsv"
     with open(file, encoding="utf-8") as f:
@@ -60,4 +66,4 @@ if __name__ == "__main__":
     idx = 10
     text = df.at[idx, "text"]
     print(text)
-    print(p.preprocess(text, added_pipes=[p.remove_digits, p.remove_not_alpha]))
+    print(p.preprocess(text))
