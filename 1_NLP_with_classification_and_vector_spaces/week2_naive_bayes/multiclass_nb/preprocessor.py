@@ -17,8 +17,9 @@ class Preprocessor(object):
     def punctuations(self) -> Set[str]:
         return self._punc
     
-    def add_pipe(self, pyfunc: Callable) -> None:
+    def add_pipe(self, pyfunc: Callable) -> "Preprocessor":
         self._added_pipes.append(pyfunc)
+        return self
 
     def tokenize(self, text: str) -> List[str]:
         return wordpunct_tokenize(text)
