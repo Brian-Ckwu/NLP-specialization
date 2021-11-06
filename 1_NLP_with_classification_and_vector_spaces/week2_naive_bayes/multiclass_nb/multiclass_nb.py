@@ -13,8 +13,9 @@ class NaiveBayes(object):
         self._label2int = dict()
         self._int2label = list()
         # training results
+        self._V = set()
         self._priorprob = list()
-        self._likelihood = dict()
+        self._likelihood = list()
     
     @property
     def data(self) -> Dict[str, np.ndarray]:
@@ -25,7 +26,7 @@ class NaiveBayes(object):
         return self._priorprob
     
     @property
-    def likelihood(self) -> Dict[Tuple[str, int], float]:
+    def likelihood(self) -> List[Dict[str, float]]:
         return self._likelihood
     
     def map_labels(self, labels: Iterable) -> None:
@@ -39,6 +40,7 @@ class NaiveBayes(object):
         return convert(labels)
 
     def load(self, train_xs, train_ys, test_xs, test_ys) -> "NaiveBayes":
+        # self.__init__(self._preprocessor)
         self.map_labels(train_ys)
         self._data = {
             "train_xs": train_xs,
@@ -62,24 +64,59 @@ class NaiveBayes(object):
         self._priorprob = [np.log(ss / sum(self._priorprob)) for ss in self._priorprob]
         return self
     
+    def build_vocab(self, xs: List[List[str]]) -> "NaiveBayes":
+        for x in xs:
+            for token in x:
+                self._V.add(token)
+        return self
+
     def build_log_likelihood(self) -> "NaiveBayes":
         xs = self.preprocess_arr(self._data["train_xs"])
-        V = set(reduce(lambda l1, l2: l1 + l2, xs))
-        print(len(V))
-        # for x, y in zip(xs, self._data["train_ys"]):
-        #     for token in x:
-
+        self.build_vocab(xs)
+        word_freqs = [dict.fromkeys(self._V, 0) for _ in range(len(self._int2label))]
+        class_freqs = [0 for _ in range(len(self._int2label))]
+        for x, y in zip(xs, self._data["train_ys"]):
+            for token in x:
+                word_freqs[y][token] += 1
+                class_freqs[y] += 1
+        self._likelihood = [dict.fromkeys(self._V, 0) for _ in range(len(self._int2label))]
+        for i in range(len(self._likelihood)):
+            for word in self._V:
+                self._likelihood[i][word] = np.log((word_freqs[i][word] + 1) / (class_freqs[i] + len(self._V)))
         return self
     
     def train(self):
         return self.build_log_prior().build_log_likelihood()
+    
+    def predict(self, text: str) -> int:
+        n = len(self._int2label)
+        probs = [0 for _ in range(n)]
+        tokens = self._preprocessor.preprocess(text)
+        for i in range(n):
+            probs[i] += self._priorprob[i]
+            for token in tokens:
+                if token in self._V:
+                    probs[i] += self._likelihood[i][token]
+        return max(enumerate(probs), key=lambda t: t[1])[0]
 
     def test(self):
-        return
+        xs = self._data["test_xs"]
+        ys = self._data["test_ys"]
+        y_hat = list()
+        for x, y in zip(xs, ys):
+            y_hat.append(self.predict(x))
+        y_hat = np.array(y_hat)
+        print(f"Accuracy: {np.mean(y_hat == ys)}")
+        return self
 
 if __name__ == "__main__":
+    import re
+    chpattern = r"[\u4e00-\u9fff]+"
+    def remove_ch(tokens: List[str]) -> List[str]:
+        return list(filter(lambda t: not re.search(pattern=chpattern, string=t), tokens))
+
     p = Preprocessor()
-    p.add_pipe(p.remove_digits).add_pipe(p.remove_not_alpha)
+    p.add_pipe(p.remove_digits).add_pipe(p.remove_not_alpha).add_pipe(remove_ch)
 
     nb = NaiveBayes(preprocessor=p)
 
@@ -87,7 +124,8 @@ if __name__ == "__main__":
     data = "./data/emr_data_10_icds.tsv"
     with open(data, encoding="utf-8") as f:
         df = pd.read_csv(f, sep="\t", index_col="index")
-    train = df.groupby("icd").sample(frac=0.8)
+
+    train = df.groupby("icd").sample(frac=0.8, random_state=1)
     test = df.drop(train.index)
 
     nb.load(
@@ -95,6 +133,4 @@ if __name__ == "__main__":
         train_ys=train["icd"].values,
         test_xs=test["text"].values,
         test_ys=test["icd"].values
-    )
-
-    nb.train()
+    ).train().test()
