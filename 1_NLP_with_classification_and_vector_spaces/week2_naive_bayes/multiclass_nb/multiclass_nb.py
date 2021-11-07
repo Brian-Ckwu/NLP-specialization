@@ -103,20 +103,15 @@ class NaiveBayes(object):
         xs = self._data["test_xs"]
         ys = self._data["test_ys"]
         y_hat = list()
-        for x, y in zip(xs, ys):
+        for x in xs:
             y_hat.append(self.predict(x))
         y_hat = np.array(y_hat)
         print(f"Accuracy: {np.mean(y_hat == ys)}")
         return self
 
 if __name__ == "__main__":
-    import re
-    chpattern = r"[\u4e00-\u9fff]+"
-    def remove_ch(tokens: List[str]) -> List[str]:
-        return list(filter(lambda t: not re.search(pattern=chpattern, string=t), tokens))
-
     p = Preprocessor()
-    p.add_pipe(p.remove_digits).add_pipe(p.remove_not_alpha).add_pipe(remove_ch)
+    p.add_pipe(p.remove_digits).add_pipe(p.remove_not_alpha).add_pipe(p.remove_ch)
 
     nb = NaiveBayes(preprocessor=p)
 
@@ -134,3 +129,5 @@ if __name__ == "__main__":
         test_xs=test["text"].values,
         test_ys=test["icd"].values
     ).train().test()
+
+    print(len(nb._V))
