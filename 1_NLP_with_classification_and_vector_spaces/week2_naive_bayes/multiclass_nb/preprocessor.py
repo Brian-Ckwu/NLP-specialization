@@ -1,3 +1,4 @@
+import re
 from typing import Callable, List, Set
 from nltk.tokenize import wordpunct_tokenize
 from nltk.corpus import stopwords
@@ -7,6 +8,7 @@ class Preprocessor(object):
     def __init__(self, stopwords: Set[str] = set(stopwords.words("english")), punc: Set[str] = set(punctuation)):
         self._stopwords = stopwords
         self._punc = punc
+        self._chpattern = r"[\u4e00-\u9fff]+"
         self._added_pipes = list()
     
     @property
@@ -42,6 +44,9 @@ class Preprocessor(object):
     
     def remove_not_alpha(self, tokens: List[str]) -> List[str]:
         return list(filter(lambda t: t.isalpha(), tokens))
+
+    def remove_ch(self, tokens: List[str]) -> List[str]:
+        return list(filter(lambda t: not re.search(pattern=self._chpattern, string=t), tokens))
     
     def preprocess(self, text: str) -> List[str]:
         tokens = self.tokenize(text)
